@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, LineChart, Line } from 'recharts';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -33,6 +33,12 @@ export default function DashboardFaculty() {
     { name: 'Medium', value: dist.medium, color: COLORS[1] },
     { name: 'Strong', value: dist.strong, color: COLORS[2] }
   ].filter((d) => d.value > 0);
+  const attendanceTrend = courseAnalytics?.attendanceTrend || [];
+  const assignmentVsQuiz = courseAnalytics?.assignmentVsQuizPerformance || [];
+  const confidenceTrend = courseAnalytics?.confidenceTrend || [];
+  const weakAreas = courseAnalytics?.weakAreas || [];
+  const submissionsWithDetails = courseAnalytics?.submissionsWithDetails || [];
+  const mcqAccuracy = courseAnalytics?.mcqAccuracy || [];
 
   return (
     <div className="space-y-6">
@@ -49,7 +55,9 @@ export default function DashboardFaculty() {
           ))}
         </select>
         <Link to="/submissions" className="text-indigo-600 font-medium hover:underline">View Submissions</Link>
+        <Link to="/weak-learners" className="text-indigo-600 font-medium hover:underline">Weak Learners</Link>
       </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
           <h2 className="font-semibold text-slate-800 mb-4">Performance by Assignment</h2>
@@ -84,14 +92,103 @@ export default function DashboardFaculty() {
           )}
         </div>
       </div>
-      {courseAnalytics?.weakAreas?.length > 0 && (
+
+      {assignmentVsQuiz.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <h2 className="font-semibold text-slate-800 mb-4">Assignment vs Quiz Performance</h2>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={assignmentVsQuiz}>
+              <XAxis dataKey="type" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="avgScore" fill="#8b5cf6" name="Avg score" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {attendanceTrend.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <h2 className="font-semibold text-slate-800 mb-4">Attendance Trend</h2>
+          <ResponsiveContainer width="100%" height={250}>
+            <AreaChart data={attendanceTrend}>
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+              <YAxis domain={[0, 100]} />
+              <Tooltip />
+              <Area type="monotone" dataKey="attendance" stroke="#22c55e" fill="#22c55e33" name="Attendance %" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {confidenceTrend.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <h2 className="font-semibold text-slate-800 mb-4">Confidence Score Trend</h2>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={confidenceTrend}>
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="avgScore" stroke="#6366f1" name="Avg Score" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {mcqAccuracy.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <h2 className="font-semibold text-slate-800 mb-4">MCQ Accuracy (Quizzes)</h2>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={mcqAccuracy}>
+              <XAxis dataKey="assignment" tick={{ fontSize: 11 }} />
+              <YAxis domain={[0, 100]} />
+              <Tooltip />
+              <Bar dataKey="accuracy" fill="#22c55e" name="Accuracy %" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {weakAreas.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
           <h2 className="font-semibold text-slate-800 mb-4">Weak Learning Areas</h2>
           <ul className="list-disc list-inside text-slate-600">
-            {courseAnalytics.weakAreas.slice(0, 10).map((w, i) => (
-              <li key={i}>{w.student} - {w.assignment}</li>
+            {weakAreas.slice(0, 10).map((w, i) => (
+              <li key={i}>{w.student} — {w.assignment} {w.marks != null && `(Marks: ${w.marks})`} {w.attendancePercentage != null && `Attendance: ${w.attendancePercentage}%`}</li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {submissionsWithDetails.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm overflow-x-auto">
+          <h2 className="font-semibold text-slate-800 mb-4">Submissions (auto-calculated marks, attendance, achievements)</h2>
+          <table className="w-full text-sm text-left">
+            <thead>
+              <tr className="border-b border-slate-200">
+                <th className="py-2 pr-4">Student</th>
+                <th className="py-2 pr-4">Assignment</th>
+                <th className="py-2 pr-4">Marks</th>
+                <th className="py-2 pr-4">Attendance %</th>
+                <th className="py-2 pr-4">Score</th>
+                <th className="py-2 pr-4">Strength</th>
+                <th className="py-2">Achievements / Extracurricular</th>
+              </tr>
+            </thead>
+            <tbody>
+              {submissionsWithDetails.slice(0, 15).map((s, i) => (
+                <tr key={i} className="border-b border-slate-100">
+                  <td className="py-2 pr-4">{s.student}</td>
+                  <td className="py-2 pr-4">{s.assignment}</td>
+                  <td className="py-2 pr-4">{s.marks != null ? s.marks : '—'}</td>
+                  <td className="py-2 pr-4">{s.attendancePercentage != null ? s.attendancePercentage : '—'}</td>
+                  <td className="py-2 pr-4">{s.confidenceScore != null ? s.confidenceScore.toFixed(1) : '—'}</td>
+                  <td className="py-2 pr-4">{s.learningStrength}</td>
+                  <td className="py-2 text-slate-600">{(s.achievements || []).join(', ')} / {(s.extracurricularActivities || []).join(', ')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

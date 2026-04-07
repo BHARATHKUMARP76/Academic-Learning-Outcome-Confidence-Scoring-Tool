@@ -8,3 +8,12 @@ exports.getAllUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getStudents = async (req, res, next) => {
+  try {
+    const students = await User.find({ role: 'student' }).select('_id name').sort('name');
+    res.json(students);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -15,6 +15,11 @@ import Outcomes from './pages/Outcomes';
 import Users from './pages/Users';
 import Analytics from './pages/Analytics';
 import Notifications from './pages/Notifications';
+import Attendance from './pages/Attendance';
+import Performance from './pages/Performance';
+import WeakLearners from './pages/WeakLearners';
+import StudentAssignments from './pages/StudentAssignments';
+import FacultyAssignmentsReview from './pages/FacultyAssignmentsReview';
 
 function PrivateLayout() {
   return (
@@ -51,10 +56,15 @@ export default function App() {
               <Route path="assignments" element={<Assignments />} />
               <Route path="submissions" element={<Submissions />} />
               <Route path="submit" element={<StudentOnly><SubmitAssignment /></StudentOnly>} />
+              <Route path="student-assignments" element={<StudentOnly><StudentAssignments /></StudentOnly>} />
               <Route path="outcomes" element={<FacultyOnly><Outcomes /></FacultyOnly>} />
               <Route path="users" element={<AdminOnly><Users /></AdminOnly>} />
-              <Route path="analytics" element={<AdminOnly><Analytics /></AdminOnly>} />
+              <Route path="analytics" element={<Analytics />} />
               <Route path="notifications" element={<Notifications />} />
+              <Route path="attendance" element={<Attendance />} />
+              <Route path="performance" element={<StudentOnly><Performance /></StudentOnly>} />
+              <Route path="weak-learners" element={<FacultyOnly><WeakLearners /></FacultyOnly>} />
+              <Route path="assignments-review" element={<FacultyOnly><FacultyAssignmentsReview /></FacultyOnly>} />
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

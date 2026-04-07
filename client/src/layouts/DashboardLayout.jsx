@@ -6,22 +6,30 @@ import { useToast } from '../context/ToastContext';
 const navStudent = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/courses', label: 'Courses' },
-  { to: '/assignments', label: 'Assignments' },
-  { to: '/submissions', label: 'My Submissions' }
+  { to: '/assignments', label: 'MCQ Bank' },
+  { to: '/student-assignments', label: 'Assignments' },
+  { to: '/attendance', label: 'Attendance' },
+  { to: '/performance', label: 'Performance & Confidence' },
+  { to: '/notifications', label: 'Notifications' }
 ];
 
 const navFaculty = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/courses', label: 'Courses' },
   { to: '/outcomes', label: 'Learning Outcomes' },
-  { to: '/assignments', label: 'Assignments' },
-  { to: '/submissions', label: 'Submissions' }
+  { to: '/assignments', label: 'MCQ Bank' },
+  { to: '/submissions', label: 'Student Submissions' },
+  { to: '/attendance', label: 'Attendance Overview' },
+  { to: '/analytics', label: 'Analytics' },
+  { to: '/weak-learners', label: 'Weak Learners' },
+  { to: '/assignments-review', label: 'Student Achievements & Activities' }
 ];
 
 const navAdmin = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/users', label: 'Users' },
-  { to: '/analytics', label: 'Analytics' }
+  { to: '/analytics', label: 'Analytics' },
+  { to: '/courses', label: 'Courses' }
 ];
 
 export default function DashboardLayout() {
@@ -29,7 +37,6 @@ export default function DashboardLayout() {
   const { addToast } = useToast();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const nav = user?.role === 'admin' ? navAdmin : user?.role === 'faculty' ? navFaculty : navStudent;
 
@@ -41,23 +48,14 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <aside
-        className={`${
-          sidebarOpen ? 'w-56' : 'w-16'
-        } bg-slate-800 text-white transition-all duration-200 flex flex-col fixed h-full z-30`}
-      >
+      <aside className={`${sidebarOpen ? 'w-56' : 'w-16'} bg-slate-800 text-white transition-all duration-200 flex flex-col fixed h-full z-30 shadow-lg`}>
         <div className="p-4 border-b border-slate-700 flex items-center justify-between">
           {sidebarOpen && (
             <Link to="/dashboard" className="font-semibold text-lg truncate">
-              Confidence Tool
+              Academic Confidence
             </Link>
           )}
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1 rounded hover:bg-slate-700"
-            aria-label="Toggle sidebar"
-          >
+          <button type="button" onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded hover:bg-slate-700" aria-label="Toggle sidebar">
             {sidebarOpen ? '◀' : '▶'}
           </button>
         </div>
@@ -67,9 +65,7 @@ export default function DashboardLayout() {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-lg text-sm ${
-                  isActive ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                }`
+                `block px-3 py-2.5 rounded-lg text-sm ${isActive ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`
               }
             >
               {sidebarOpen ? item.label : item.label.charAt(0)}
@@ -78,21 +74,13 @@ export default function DashboardLayout() {
         </nav>
       </aside>
       <div className={`flex-1 ${sidebarOpen ? 'ml-56' : 'ml-16'} transition-all duration-200 flex flex-col`}>
-        <header className="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-4 sticky top-0 z-20">
+        <header className="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-4 sticky top-0 z-20 shadow-sm">
           <h1 className="text-slate-800 font-medium truncate">{user?.name}</h1>
           <div className="flex items-center gap-2">
-            <Link
-              to="/notifications"
-              className="p-2 rounded-lg hover:bg-slate-100 text-slate-600"
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-            >
+            <Link to="/notifications" className="p-2 rounded-lg hover:bg-slate-100 text-slate-600 text-sm font-medium">
               Notifications
             </Link>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm"
-            >
+            <button type="button" onClick={handleLogout} className="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm">
               Logout
             </button>
           </div>

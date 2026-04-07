@@ -24,11 +24,14 @@ export default function DashboardStudent() {
 
   const perf = data?.performancePerAssignment || [];
   const dist = data?.distribution || { weak: 0, medium: 0, strong: 0 };
+  const outcomeAnalysis = data?.outcomeAnalysis || [];
+  const latestOutcome = outcomeAnalysis[0] || null;
   const pieData = [
     { name: 'Weak', value: dist.weak, color: COLORS[0] },
     { name: 'Medium', value: dist.medium, color: COLORS[1] },
     { name: 'Strong', value: dist.strong, color: COLORS[2] }
   ].filter((d) => d.value > 0);
+  const mcqAccuracy = data?.mcqAccuracy || [];
 
   return (
     <div className="space-y-6">
@@ -43,7 +46,7 @@ export default function DashboardStudent() {
           <p className="text-2xl font-bold text-slate-800">{perf.length}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-          <Link to="/assignments" className="text-indigo-600 font-medium hover:underline">View Assignments →</Link>
+          <Link to="/assignments" className="text-indigo-600 font-medium hover:underline">View MCQ Bank →</Link>
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -93,6 +96,72 @@ export default function DashboardStudent() {
           </ResponsiveContainer>
         ) : (
           <p className="text-slate-500">No trend data yet.</p>
+        )}
+      </div>
+
+      {mcqAccuracy.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <h2 className="font-semibold text-slate-800 mb-4">MCQ Accuracy (Quizzes)</h2>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={mcqAccuracy}>
+              <XAxis dataKey="assignment" tick={{ fontSize: 11 }} />
+              <YAxis domain={[0, 100]} />
+              <Tooltip />
+              <Bar dataKey="accuracy" fill="#22c55e" name="Accuracy %" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+        <h2 className="font-semibold text-slate-800 mb-4">Outcome Analysis</h2>
+        {!latestOutcome ? (
+          <p className="text-slate-500">Complete an MCQ quiz to see your outcome analysis.</p>
+        ) : (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="rounded-lg border border-slate-200 p-3">
+                <p className="text-xs text-slate-500">Quiz Score</p>
+                <p className="text-lg font-semibold text-slate-800">{Number(latestOutcome.quizScore || 0).toFixed(2)}%</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 p-3">
+                <p className="text-xs text-slate-500">Attendance</p>
+                <p className="text-lg font-semibold text-slate-800">{Number(latestOutcome.attendance || 0).toFixed(2)}%</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 p-3">
+                <p className="text-xs text-slate-500">Confidence Score</p>
+                <p className="text-lg font-semibold text-slate-800">{Number(latestOutcome.confidenceScore || 0).toFixed(2)}</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 p-3">
+                <p className="text-xs text-slate-500">Learning Outcome Level</p>
+                <p className="text-lg font-semibold text-indigo-700">{latestOutcome.learningOutcomeLevel}</p>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-slate-700 mb-1">Weak Topic Suggestions</p>
+              {latestOutcome.weakTopics?.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {latestOutcome.weakTopics.map((topic, idx) => (
+                    <span key={`${topic}-${idx}`} className="px-2 py-1 text-xs rounded-md bg-amber-100 text-amber-800 border border-amber-200">
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">No weak areas identified for this quiz.</p>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+              <p className="text-sm font-medium text-indigo-700 mb-1">Improvement Recommendations</p>
+              <p className="text-sm text-indigo-900">{latestOutcome.recommendation}</p>
+            </div>
+
+            <div className="text-xs text-slate-500">
+              Based on quiz: <span className="font-medium">{latestOutcome.assignment}</span>
+            </div>
+          </div>
         )}
       </div>
     </div>
