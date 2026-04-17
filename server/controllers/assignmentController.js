@@ -1,6 +1,7 @@
 const Assignment = require('../models/Assignment');
 const Course = require('../models/Course');
 const LearningOutcome = require('../models/LearningOutcome');
+const User = require('../models/User');
 
 exports.createAssignment = async (req, res, next) => {
   try {
@@ -41,8 +42,13 @@ exports.createAssignment = async (req, res, next) => {
         return res.status(400).json({ message: 'Quiz total marks must be at least 1 (number of MCQ questions)' });
       }
     }
-    if (type === 'quiz' && (!Array.isArray(assignedStudents) || assignedStudents.length === 0)) {
-      return res.status(400).json({ message: 'Quiz must be assigned to at least one student.' });
+    let resolvedAssignedStudents = assignedStudents;
+    if (type === 'quiz' && (!Array.isArray(resolvedAssignedStudents) || resolvedAssignedStudents.length === 0)) {
+      const students = await User.find({ role: 'student' }).select('_id').lean();
+      resolvedAssignedStudents = students.map((s) => String(s._id));
+      if (resolvedAssignedStudents.length === 0) {
+        return res.status(400).json({ message: 'Quiz must be assigned to at least one student.' });
+      }
     }
 
     const assignment = await Assignment.create({
@@ -55,8 +61,8 @@ exports.createAssignment = async (req, res, next) => {
       correctAnswer: type === 'quiz' ? undefined : correctAnswer != null ? String(correctAnswer).trim() : undefined,
       questions: quizQuestions,
       assignedStudents:
-        type === 'quiz' && Array.isArray(assignedStudents)
-          ? [...new Set(assignedStudents.map(String))]
+        type === 'quiz' && Array.isArray(resolvedAssignedStudents)
+          ? [...new Set(resolvedAssignedStudents.map(String))]
           : []
     });
     res.status(201).json(assignment);

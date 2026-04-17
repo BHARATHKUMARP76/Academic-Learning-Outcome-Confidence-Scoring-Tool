@@ -17,8 +17,11 @@ export default function StudentAssignments() {
 
   const buildFileUrl = (filePath) => {
     if (!filePath) return '#';
-    const cleanPath = String(filePath).replace(/^\/+/, '');
-    return `${fileBaseUrl}/${cleanPath}`;
+    const normalized = String(filePath).replace(/\\/g, '/').trim();
+    const withoutQuery = normalized.split('?')[0];
+    const parts = withoutQuery.split('/');
+    const filename = parts[parts.length - 1] || '';
+    return filename ? `${fileBaseUrl}/uploads/${filename}` : '#';
   };
 
   useEffect(() => {
@@ -252,7 +255,7 @@ export default function StudentAssignments() {
                   rel="noopener noreferrer"
                   className="text-indigo-600 text-sm hover:underline"
                 >
-                  View proof
+                  View PDF
                 </a>
               </div>
             ))}

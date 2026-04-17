@@ -11,8 +11,11 @@ export default function FacultyAssignmentsReview() {
 
   const buildFileUrl = (filePath) => {
     if (!filePath) return '#';
-    const cleanPath = String(filePath).replace(/^\/+/, '');
-    return `${fileBaseUrl}/${cleanPath}`;
+    const normalized = String(filePath).replace(/\\/g, '/').trim();
+    const withoutQuery = normalized.split('?')[0];
+    const parts = withoutQuery.split('/');
+    const filename = parts[parts.length - 1] || '';
+    return filename ? `${fileBaseUrl}/uploads/${filename}` : '#';
   };
 
   useEffect(() => {
@@ -105,7 +108,7 @@ export default function FacultyAssignmentsReview() {
                         rel="noopener noreferrer"
                         className="text-indigo-600 hover:underline"
                       >
-                        View file
+                        View PDF
                       </a>
                     </td>
                   </tr>

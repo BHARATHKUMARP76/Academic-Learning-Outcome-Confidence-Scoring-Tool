@@ -20,6 +20,7 @@ import Performance from './pages/Performance';
 import WeakLearners from './pages/WeakLearners';
 import StudentAssignments from './pages/StudentAssignments';
 import FacultyAssignmentsReview from './pages/FacultyAssignmentsReview';
+import Achievements from './pages/Achievements';
 
 function PrivateLayout() {
   return (
@@ -63,6 +64,7 @@ export default function App() {
               <Route path="notifications" element={<Notifications />} />
               <Route path="attendance" element={<Attendance />} />
               <Route path="performance" element={<StudentOnly><Performance /></StudentOnly>} />
+              <Route path="achievements" element={<StudentOnly><Achievements /></StudentOnly>} />
               <Route path="weak-learners" element={<FacultyOnly><WeakLearners /></FacultyOnly>} />
               <Route path="assignments-review" element={<FacultyOnly><FacultyAssignmentsReview /></FacultyOnly>} />
             </Route>

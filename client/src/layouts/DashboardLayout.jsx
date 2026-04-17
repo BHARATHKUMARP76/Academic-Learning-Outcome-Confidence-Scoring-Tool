@@ -8,6 +8,7 @@ const navStudent = [
   { to: '/courses', label: 'Courses' },
   { to: '/assignments', label: 'MCQ Bank' },
   { to: '/student-assignments', label: 'Assignments' },
+  { to: '/achievements', label: 'Achievements & Activities' },
   { to: '/attendance', label: 'Attendance' },
   { to: '/performance', label: 'Performance & Confidence' },
   { to: '/notifications', label: 'Notifications' }

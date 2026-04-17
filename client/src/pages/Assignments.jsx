@@ -13,6 +13,7 @@ export default function Assignments() {
   const [courses, setCourses] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [outcomes, setOutcomes] = useState([]);
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     title: '',
@@ -22,7 +23,8 @@ export default function Assignments() {
     dueDate: '',
     type: 'assignment',
     correctAnswer: '',
-    questions: []
+    questions: [],
+    assignedStudents: []
   });
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -48,6 +50,25 @@ export default function Assignments() {
     }
     api.get('/outcomes/' + courseId).then((res) => setOutcomes(res.data || [])).catch(() => setOutcomes([]));
   }, [courseId, isFaculty]);
+
+  useEffect(() => {
+    if (!isFaculty) {
+      setStudents([]);
+      return;
+    }
+    api
+      .get('/users/students')
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : [];
+        setStudents(list);
+        setForm((f) => {
+          // If nothing selected yet, default to "all students"
+          if (Array.isArray(f.assignedStudents) && f.assignedStudents.length > 0) return f;
+          return { ...f, assignedStudents: list.map((s) => s._id) };
+        });
+      })
+      .catch(() => setStudents([]));
+  }, [isFaculty]);
 
   const quizTotal = (form.questions || []).length;
 
@@ -92,6 +113,10 @@ export default function Assignments() {
       addToast('Add at least one MCQ question.', 'error');
       return;
     }
+    if (students.length > 0 && (!Array.isArray(form.assignedStudents) || form.assignedStudents.length === 0)) {
+      addToast('Select at least one student to assign this quiz.', 'error');
+      return;
+    }
 
     const payload = {
       title: autoTitle,
@@ -100,6 +125,7 @@ export default function Assignments() {
       dueDate: autoDueDate,
       type: 'quiz',
       totalMarks: quizTotal,
+      assignedStudents: Array.isArray(form.assignedStudents) ? form.assignedStudents : [],
       questions: (form.questions || []).map((q) => ({
         questionText: q.questionText,
         options: [q.optionA, q.optionB, q.optionC, q.optionD]
@@ -120,7 +146,8 @@ export default function Assignments() {
         dueDate: '',
         type: 'assignment',
         correctAnswer: '',
-        questions: []
+        questions: [],
+        assignedStudents: students.map((s) => s._id)
       });
       setShowForm(false);
       addToast('Created successfully', 'success');
@@ -134,6 +161,10 @@ export default function Assignments() {
       addToast('Add at least one MCQ question.', 'error');
       return;
     }
+    if (students.length > 0 && (!Array.isArray(form.assignedStudents) || form.assignedStudents.length === 0)) {
+      addToast('Select at least one student to assign this quiz.', 'error');
+      return;
+    }
 
     const autoTitle = (form.title || '').trim() || 'MCQ Quiz';
     const autoDescription = (form.description || '').trim() || '';
@@ -145,6 +176,7 @@ export default function Assignments() {
       dueDate: autoDueDate,
       type: 'quiz',
       totalMarks: quizTotal,
+      assignedStudents: Array.isArray(form.assignedStudents) ? form.assignedStudents : [],
       questions: (form.questions || []).map((q) => ({
         questionText: q.questionText,
         options: [q.optionA, q.optionB, q.optionC, q.optionD]
@@ -165,7 +197,8 @@ export default function Assignments() {
         dueDate: '',
         type: 'assignment',
         correctAnswer: '',
-        questions: []
+        questions: [],
+        assignedStudents: students.map((s) => s._id)
       });
       addToast('Updated successfully', 'success');
     }).catch((err) => addToast(err.response?.data?.message || 'Failed', 'error'));
@@ -181,6 +214,7 @@ export default function Assignments() {
       dueDate: a.dueDate ? new Date(a.dueDate).toISOString().slice(0, 16) : '',
       type: a.type || 'assignment',
       correctAnswer: a.correctAnswer || '',
+      assignedStudents: Array.isArray(a.assignedStudents) ? a.assignedStudents.map((id) => String(id)) : [],
       questions: Array.isArray(a.questions)
         ? a.questions.map((q) => ({
             questionText: q.questionText || '',
@@ -225,6 +259,59 @@ export default function Assignments() {
 
           {isFaculty && (
             <div className="space-y-3">
+              <div className="border border-slate-200 rounded-xl p-3 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-semibold text-slate-800">Assign to students</p>
+                  {students.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm((f) => ({
+                          ...f,
+                          assignedStudents:
+                            Array.isArray(f.assignedStudents) && f.assignedStudents.length === students.length
+                              ? []
+                              : students.map((s) => s._id)
+                        }))
+                      }
+                      className="text-sm text-indigo-700 hover:underline"
+                    >
+                      {Array.isArray(form.assignedStudents) && form.assignedStudents.length === students.length
+                        ? 'Clear'
+                        : 'Select all'}
+                    </button>
+                  )}
+                </div>
+                {students.length === 0 ? (
+                  <p className="text-sm text-slate-500">No students found. You can still create a quiz, but it won’t be assignable until students exist.</p>
+                ) : (
+                  <div className="max-h-40 overflow-auto space-y-1">
+                    {students.map((s) => {
+                      const checked = Array.isArray(form.assignedStudents) && form.assignedStudents.includes(s._id);
+                      return (
+                        <label key={s._id} className="flex items-center gap-2 text-sm text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(e) => {
+                              const nextChecked = e.target.checked;
+                              setForm((f) => {
+                                const current = Array.isArray(f.assignedStudents) ? f.assignedStudents : [];
+                                const next = nextChecked
+                                  ? [...new Set([...current, s._id])]
+                                  : current.filter((id) => id !== s._id);
+                                return { ...f, assignedStudents: next };
+                              });
+                            }}
+                          />
+                          <span>{s.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-slate-800">MCQ Questions</h3>
                 <button type="button" onClick={addQuestion} className="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-sm hover:bg-slate-900">
@@ -310,7 +397,7 @@ export default function Assignments() {
           )}
           <div className="flex gap-2">
             <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg">{editingId ? 'Update' : 'Create'}</button>
-            {editingId && <button type="button" onClick={() => { setEditingId(null); setForm({ title: '', description: '', course: '', totalMarks: '', dueDate: '', type: 'assignment', correctAnswer: '', questions: [] }); }} className="px-4 py-2 border rounded-lg">Cancel</button>}
+            {editingId && <button type="button" onClick={() => { setEditingId(null); setForm({ title: '', description: '', course: '', totalMarks: '', dueDate: '', type: 'assignment', correctAnswer: '', questions: [], assignedStudents: students.map((s) => s._id) }); }} className="px-4 py-2 border rounded-lg">Cancel</button>}
           </div>
         </form>
       )}
