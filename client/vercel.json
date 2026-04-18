@@ -1,11 +1,13 @@
 {
-  "routes": [
+  "rewrites": [
     {
-      "handle": "filesystem"
+      "source": "/api/:path*",
+      "destination": "https://academic-learning-outcome-confidence-ptw1.onrender.com/api/:path*"
     },
     {
-      "src": "/.*",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
+
