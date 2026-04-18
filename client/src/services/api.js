@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://academic-learning-outcome-confidence-cqeb.onrender.com/api',
+  baseURL: '/api',
   headers: { 'Content-Type': 'application/json' }
 });
 
