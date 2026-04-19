@@ -3,17 +3,20 @@ import api from '../services/api';
 import { useToast } from '../context/ToastContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
+const fileBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 function extractFilename(fileValue) {
   if (!fileValue) return '';
   const normalized = String(fileValue).replace(/\\/g, '/').trim();
   const withoutQuery = normalized.split('?')[0];
+
   const parts = withoutQuery.split('/');
   return parts[parts.length - 1] || '';
 }
 
 function buildFileUrl(filePath) {
   const filename = extractFilename(filePath);
-  return filename ? `/uploads/${filename}` : '#';
+  return filename ? ${fileBaseUrl}/uploads/${filename} : '#';
 }
 
 export default function Achievements() {
@@ -21,7 +24,6 @@ export default function Achievements() {
   const [loading, setLoading] = useState(true);
   const [achievements, setAchievements] = useState([]);
   const [activities, setActivities] = useState([]);
-  const [viewerFile, setViewerFile] = useState(null);
 
   const [achForm, setAchForm] = useState({ title: '', platform: '', description: '' });
   const [achFile, setAchFile] = useState(null);
@@ -242,14 +244,14 @@ export default function Achievements() {
                     {a.submittedAt ? new Date(a.submittedAt).toLocaleString() : ''}
                   </p>
                 </div>
-                <button
-  type="button"
-  onClick={() => setViewerFile(buildFileUrl(a.filePath))}
-  className="text-sm text-indigo-600 hover:underline shrink-0"
->
-  View certificate
-</button>
-
+                <a
+                  href={buildFileUrl(a.filePath)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-indigo-600 hover:underline shrink-0"
+                >
+                  View certificate
+                </a>
               </li>
             ))}
           </ul>
@@ -268,60 +270,26 @@ export default function Achievements() {
                   <p className="font-medium text-slate-800">{x.eventName}</p>
                   <p className="text-sm text-slate-600">
                     {x.eventType}
-                    {x.dateOfParticipation ? ` · ${new Date(x.dateOfParticipation).toLocaleDateString()}` : ''}
+                    {x.dateOfParticipation ?  · ${new Date(x.dateOfParticipation).toLocaleDateString()} : ''}
                   </p>
                   {x.description ? <p className="text-sm text-slate-500 mt-1">{x.description}</p> : null}
                 </div>
-                <button
-              type="button"
-                   onClick={() => setViewerFile(buildFileUrl(x.filePath))}
-                    className="text-sm text-indigo-600 hover:underline shrink-0"
-                      >
-                 View proof
-                </button>
-
+                <a
+                  href={buildFileUrl(x.filePath)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-indigo-600 hover:underline shrink-0"
+                >
+                  View proof
+                </a>
               </li>
             ))}
           </ul>
         ) : (
           <p className="text-sm text-slate-500">No activities submitted yet.</p>
         )}
-           </section>
-
-      {viewerFile ? (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-              <h3 className="font-semibold text-slate-800">Certificate / Proof Viewer</h3>
-
-              <div className="flex gap-3">
-                <a
-                  href={viewerFile}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-indigo-600 hover:underline"
-                >
-                  Open in new tab
-                </a>
-
-                <button
-                  type="button"
-                  onClick={() => setViewerFile(null)}
-                  className="text-sm text-slate-600 hover:text-slate-900"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-
-            <iframe
-              src={viewerFile}
-              title="Certificate viewer"
-              className="w-full flex-1"
-            />
-          </div>
-        </div>
-      ) : null}
+      </section>
     </div>
   );
 }
+
