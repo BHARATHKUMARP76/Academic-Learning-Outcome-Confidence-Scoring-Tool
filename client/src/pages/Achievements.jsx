@@ -3,8 +3,6 @@ import api from '../services/api';
 import { useToast } from '../context/ToastContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
-const fileBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
 function extractFilename(fileValue) {
   if (!fileValue) return '';
   const normalized = String(fileValue).replace(/\\/g, '/').trim();
@@ -15,7 +13,7 @@ function extractFilename(fileValue) {
 
 function buildFileUrl(filePath) {
   const filename = extractFilename(filePath);
-  return filename ? `${fileBaseUrl}/uploads/${filename}` : '#';
+  return filename ? `/uploads/${filename}` : '#';
 }
 
 export default function Achievements() {
